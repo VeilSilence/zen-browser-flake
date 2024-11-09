@@ -16,7 +16,7 @@
   mesa,
   pciutils,
   pipewire,
-  pulseaudio,
+  # pulseaudio,
   xorg,
   # package-related
   sourceInfo,
@@ -70,9 +70,10 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       --prefix LD_LIBRARY_PATH : "${lib.makeLibraryPath [
       pciutils
       pipewire
-      pulseaudio
+      #pulseaudio
       libva
       libglvnd
+      libnotify
       mesa
       ffmpeg
     ]}"
