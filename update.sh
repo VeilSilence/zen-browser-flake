@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-regex="^[a-zA-Z0-9-]+$"
+regex="^[a-zA-Z0-9.-]+$"
 info="info.json"
 
 if [ ! -f "$info" ] || ! jq -e . "$info" > /dev/null 2>&1; then
