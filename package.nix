@@ -51,6 +51,16 @@ stdenvNoCC.mkDerivation (finalAttrs: {
 
     install -D ${./.}/zen.desktop $out/share/applications/zen.desktop
 
+    # Policy.json in "distribution"
+    mkdir -p $out/lib/zen/distribution
+    cat > $out/lib/zen/distribution/policies.json <<EOF
+    {
+      "policies": {
+        "DisableAppUpdate": true
+      }
+    }
+    EOF
+
     # link icons to the appropriate places
     pushd $out/lib/zen/browser/chrome/icons/default
     for icon in *; do
