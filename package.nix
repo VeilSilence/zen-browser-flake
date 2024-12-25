@@ -22,7 +22,7 @@
   sourceInfo,
 }:
 stdenvNoCC.mkDerivation (finalAttrs: {
-  pname = "zen-browser-${sourceInfo.variant}";
+  pname = "zen-browser";
   inherit (sourceInfo) version;
 
   src = fetchurl sourceInfo.src;
@@ -50,6 +50,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     fd --type x --exclude '*.so' --exec ln -s $out/lib/zen/{} $out/bin/{}
 
     install -D ${./.}/zen.desktop $out/share/applications/zen.desktop
+
 
     # Policy.json in "distribution"
     mkdir -p $out/lib/zen/distribution
@@ -82,8 +83,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       pipewire
       pulseaudio
       libva
-      libglvnd
       libnotify
+      libglvnd
       mesa
       ffmpeg
     ]}"
@@ -97,6 +98,9 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     description = "Beautiful, fast, private browser";
     license = lib.licenses.mpl20;
     mainProgram = "zen";
-    platforms = ["x86_64-linux"];
+    platforms = [
+      "aarch64-linux"
+      "x86_64-linux"
+    ];
   };
 })
