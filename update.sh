@@ -6,7 +6,7 @@ regex="^[a-zA-Z0-9.-]+$"
 info="info.json"
 
 if [ ! -f "$info" ] || ! jq -e . "$info" > /dev/null 2>&1; then
-  echo '{"version": "0.0.0", "generic": {"hash": "", "url": ""}, "specific": {"hash": "", "url": ""}}' > "$info"
+  echo '{"version": "0.0.0", "hash": "", "url": ""}' > "$info"
 fi
 
 oldversion=$(jq -rc '.version' "$info")
@@ -17,28 +17,22 @@ version="$(curl -s "$url" | jq -rc '.[0].tag_name')"
 echo "Fetched version: $version"
 
 if [[ "$version" == "twilight" || "$version" == "$oldversion" ]]; then
-  echo "Version is twilight, verifying hashes..."
+  echo "Version is twilight, verifying hash..."
   sharedUrl="https://github.com/zen-browser/desktop/releases/download"
-  genericUrl="${sharedUrl}/${version}/zen.linux-generic.tar.bz2"
-  specificUrl="${sharedUrl}/${version}/zen.linux-specific.tar.bz2"
+  downloadUrl="${sharedUrl}/${version}/zen.linux-x86_64.tar.bz2"
 
-  echo "Prefetching files for twilight..."
-  nix store prefetch-file "$genericUrl" --log-format raw --json | jq -rc '.hash' >/tmp/genericHash &
-  nix store prefetch-file "$specificUrl" --log-format raw --json | jq -rc '.hash' >/tmp/specificHash &
-  wait
+  echo "Prefetching file..."
+  nix store prefetch-file "$downloadUrl" --log-format raw --json | jq -rc '.hash' >/tmp/newHash
 
-  genericHash=$(</tmp/genericHash)
-  specificHash=$(</tmp/specificHash)
+  newHash=$(</tmp/newHash)
+  oldHash=$(jq -rc '.hash' "$info")
 
-  oldGenericHash=$(jq -rc '.generic.hash' "$info")
-  oldSpecificHash=$(jq -rc '.specific.hash' "$info")
-
-  if [[ "$genericHash" != "$oldGenericHash" || "$specificHash" != "$oldSpecificHash" ]]; then
-    echo "Hashes changed for twilight, updating info.json..."
-    echo "{\"version\":\"$version\",\"generic\":{\"hash\":\"$genericHash\",\"url\":\"$genericUrl\"},\"specific\":{\"hash\":\"$specificHash\",\"url\":\"$specificUrl\"}}" > "$info"
-    echo "Zen updated to version $version with new hashes."
+  if [[ "$newHash" != "$oldHash" ]]; then
+    echo "Hash changed, updating info.json..."
+    echo "{\"version\":\"$version\",\"hash\":\"$newHash\",\"url\":\"$downloadUrl\"}" > "$info"
+    echo "Zen updated to version $version with new hash."
   else
-    echo "Hashes for twilight are unchanged, no update needed."
+    echo "Hash is unchanged, no update needed."
   fi
   exit 0
 fi
@@ -46,18 +40,14 @@ fi
 if [[ "$oldversion" != "$version" && "$version" =~ $regex ]]; then
   echo "Found new version $version"
   sharedUrl="https://github.com/zen-browser/desktop/releases/download"
-  genericUrl="${sharedUrl}/${version}/zen.linux-generic.tar.bz2"
-  specificUrl="${sharedUrl}/${version}/zen.linux-specific.tar.bz2"
+  downloadUrl="${sharedUrl}/${version}/zen.linux-x86_64.tar.bz2"
 
-  echo "Prefetching files..."
-  nix store prefetch-file "$genericUrl" --log-format raw --json | jq -rc '.hash' >/tmp/genericHash &
-  nix store prefetch-file "$specificUrl" --log-format raw --json | jq -rc '.hash' >/tmp/specificHash &
-  wait
+  echo "Prefetching file..."
+  nix store prefetch-file "$downloadUrl" --log-format raw --json | jq -rc '.hash' >/tmp/newHash
 
-  genericHash=$(</tmp/genericHash)
-  specificHash=$(</tmp/specificHash)
+  newHash=$(</tmp/newHash)
 
-  echo "{\"version\":\"$version\",\"generic\":{\"hash\":\"$genericHash\",\"url\":\"$genericUrl\"},\"specific\":{\"hash\":\"$specificHash\",\"url\":\"$specificUrl\"}}" > "$info"
+  echo "{\"version\":\"$version\",\"hash\":\"$newHash\",\"url\":\"$downloadUrl\"}" > "$info"
 
   echo "Zen updated to version $version"
 else

@@ -99,7 +99,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     license = lib.licenses.mpl20;
     mainProgram = "zen";
     platforms = [
-      "aarch64-linux"
+    #"aarch64-linux" not needed atm
       "x86_64-linux"
     ];
   };
